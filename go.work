@@ -2,3 +2,8 @@ go 1.27.1
 
 use .
 use ./internal/goapp
+use ./internal/mtweb
+use ./pkg/dhtml
+use ./pkg/dhtmlbs
+use ./pkg/dhtmlform
+use ./pkg/mbr

@@ -3,3 +3,28 @@
 	url = https://github.com/mitoteam/goapp.git
 	branch = main
     ignore = all # ignore hash changes
+[submodule "internal/mtweb"]
+	path = internal/mtweb
+	url = https://github.com/mitoteam/mtweb.git
+	branch = main
+    ignore = all # ignore hash changes
+[submodule "pkg/dhtml"]
+	path = pkg/dhtml
+	url = https://github.com/mitoteam/dhtml.git
+	branch = main
+    ignore = all # ignore hash changes
+[submodule "pkg/dhtmlbs"]
+	path = pkg/dhtmlbs
+	url = https://github.com/mitoteam/dhtmlbs.git
+	branch = main
+    ignore = all # ignore hash changes
+[submodule "pkg/dhtmlform"]
+	path = pkg/dhtmlform
+	url = https://github.com/mitoteam/dhtmlform.git
+	branch = main
+    ignore = all # ignore hash changes
+[submodule "pkg/mbr"]
+	path = pkg/mbr
+	url = https://github.com/mitoteam/mbr.git
+	branch = main
+    ignore = all # ignore hash changes
