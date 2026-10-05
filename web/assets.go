@@ -8,8 +8,6 @@ import (
 // embedded web assets
 //
 //go:embed assets/script.min.js
-//go:embed assets/vendor/*.css assets/vendor/*.js
-//go:embed assets/webfonts/*
 //go:embed assets/css/*.css
 //go:embed assets/images/*.png
 //go:embed assets/favicon.ico

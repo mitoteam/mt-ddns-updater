@@ -19,12 +19,12 @@ func init() {
 	RootCtl.With(middleware.Recoverer)
 }
 
-func (c *RootController) Assets() mbr.Route {
-	return mbr.Route{PathPattern: "/assets", StaticFS: webAssetsFS}
+func (c *RootController) MtWebAssets() mbr.Route {
+	return mtweb.AssetsRoute
 }
 
-func (c *RootController) MtWebAssets() mbr.Route {
-	return mbr.Route{PathPattern: "/assets/mtweb", StaticFS: mtweb.MtWebAssetsFS}
+func (c *RootController) Assets() mbr.Route {
+	return mbr.Route{PathPattern: "/assets", StaticFS: webAssetsFS}
 }
 
 func (c *RootController) FavIcon() mbr.Route {
