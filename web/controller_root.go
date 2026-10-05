@@ -2,7 +2,9 @@ package web
 
 import (
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/mitoteam/dhtml"
 	"github.com/mitoteam/mbr"
+	"github.com/mitoteam/mt-ddns-updater/app"
 	"github.com/mitoteam/mtweb"
 )
 
@@ -19,10 +21,10 @@ func init() {
 	RootCtl.With(middleware.Recoverer)
 }
 
-func (c *RootController) MtWebAssets() mbr.Route {
-	return mtweb.AssetsRoute
-}
+// Add standard mtweb assets route
+func (c *RootController) MtWebAssets() mbr.Route { return mtweb.AssetsRoute }
 
+// custom assets route as embedded FS
 func (c *RootController) Assets() mbr.Route {
 	return mbr.Route{PathPattern: "/assets", StaticFS: webAssetsFS}
 }
@@ -32,8 +34,19 @@ func (c *RootController) FavIcon() mbr.Route {
 }
 
 func (c *RootController) Home() mbr.Route {
-	route := mbr.Route{
+	return mbr.Route{
 		PathPattern: "/",
+		HandleF: PageBuilderRouteHandler(func(p *PageBuilder) any {
+			p.Main(dhtml.NewTag("h1").Append(app.App.AppName))
+			p.Main("SOMETHING Main content goes here...")
+			return nil
+		}),
+	}
+}
+
+func (c *RootController) Test() mbr.Route {
+	route := mbr.Route{
+		PathPattern: "/test",
 		HandleF: func(ctx *mbr.MbrContext) any {
 			return "Hello, this is MT DDNS Updater!"
 		},
