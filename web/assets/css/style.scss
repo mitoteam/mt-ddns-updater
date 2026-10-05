@@ -1,0 +1,45 @@
+$spacer: 1rem;
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+
+  background-color: white;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.5)),
+    url(/assets/images/bg.png);
+}
+
+//override Bootstrap's font-weight: bolder; - it is too bold in Roboto.
+.fw-bolder, b, strong, th, label.form-label {
+  font-weight: 500 !important;
+}
+
+// space between form items
+.dhtml-form {
+  .form-item{
+    margin-bottom: $spacer;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.text-prewrap {
+  white-space: pre-wrap !important;
+}
+
+// no space after form labels
+.form-label {
+  margin-bottom: 0;
+}
+
+.mt-no-last-p-margin {
+  & > p:last-child {
+    margin-bottom: 0 !important;
+  }
+}
