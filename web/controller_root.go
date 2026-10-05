@@ -3,6 +3,7 @@ package web
 import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/mitoteam/mbr"
+	"github.com/mitoteam/mtweb"
 )
 
 type RootController struct {
@@ -20,6 +21,10 @@ func init() {
 
 func (c *RootController) Assets() mbr.Route {
 	return mbr.Route{PathPattern: "/assets", StaticFS: webAssetsFS}
+}
+
+func (c *RootController) MtWebAssets() mbr.Route {
+	return mbr.Route{PathPattern: "/assets/mtweb", StaticFS: mtweb.MtWebAssetsFS}
 }
 
 func (c *RootController) FavIcon() mbr.Route {
