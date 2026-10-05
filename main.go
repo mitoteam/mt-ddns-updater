@@ -2,12 +2,21 @@ package main
 
 import (
 	_ "embed"
-	"log"
+
+	"github.com/mitoteam/mbr"
+	"github.com/mitoteam/mt-ddns-updater/app"
+	"github.com/mitoteam/mt-ddns-updater/web"
 )
 
 //go:embed LICENSE.md
 var licenseString string
 
 func main() {
-	log.Default().Println(licenseString)
+	app := app.InitApp()
+	app.SetHandler(mbr.Handler(web.RootCtl))
+
+	app.License = licenseString
+
+	app.Run()
+
 }
