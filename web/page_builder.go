@@ -21,13 +21,13 @@ func NewPageBuilder(ctx *mbr.MbrContext) *PageBuilder {
 	}
 
 	p.BuildHeadTitleF = func() string {
-		title := p.GetTitle()
+		title := app.App.AppName
 
-		if title == "" {
-			return app.App.AppName
-		} else {
-			return title + " | " + app.App.AppName
+		if p.GetTitle() != "" {
+			title = p.GetTitle() + " | " + title
 		}
+
+		return title
 	}
 
 	p.RenderF = p.render

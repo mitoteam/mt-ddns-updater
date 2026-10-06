@@ -38,19 +38,8 @@ func (c *RootController) Home() mbr.Route {
 		PathPattern: "/",
 		HandleF: PageBuilderRouteHandler(func(p *PageBuilder) any {
 			p.Main(dhtml.NewTag("h1").Append(app.App.AppName))
-			p.Main("SOMETHING Main content goes here...")
+			p.Main("SOMETHING goes here...")
 			return nil
 		}),
 	}
-}
-
-func (c *RootController) Test() mbr.Route {
-	route := mbr.Route{
-		PathPattern: "/test",
-		HandleF: func(ctx *mbr.MbrContext) any {
-			return "Hello, this is MT DDNS Updater!"
-		},
-	}
-
-	return route
 }
