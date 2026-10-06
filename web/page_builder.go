@@ -35,7 +35,8 @@ func NewPageBuilder(ctx *mbr.MbrContext) *PageBuilder {
 	return p
 }
 
-func PageBuilderRouteHandler(buildPageF func(*PageBuilder) any) func(ctx *mbr.MbrContext) any {
+// Creates a mbr.RouterHandleFunc that builds a page using PageBuilder
+func CreatePageBuilderRouteHandler(buildPageF func(*PageBuilder) any) mbr.RouterHandleFunc {
 	return func(ctx *mbr.MbrContext) any {
 		p := NewPageBuilder(ctx)
 
@@ -91,7 +92,14 @@ func (p *PageBuilder) renderHeader() (out dhtml.HtmlPiece) {
 	header_left := dhtml.Div().
 		Append(dhtml.Div().Append(dhtml.NewLink(mbr.Url(RootCtl.Home)).Label(app.App.AppName).Class("text-decoration-none")))
 
-	header_right := dhtml.Div().Class("text-end text-muted").Append("[HEADER RIGHT]")
+	header_right := dhtml.Div().Class("text-end")
+
+	if p.IsAuthenticated() {
+		header_right.Append(
+			mtweb.NewSmBtn(mbr.Url(RootCtl.Logout), "arrow-right-from-bracket").
+				Label(dhtml.Span().Class("ms-1").Append("Logout")),
+		)
+	}
 
 	header.Append(dhtmlbs.NewJustifiedLR().L(header_left).R(header_right))
 
@@ -130,4 +138,9 @@ func (p *PageBuilder) renderFooter() (out dhtml.HtmlPiece) {
 			),
 	))
 	return out
+}
+
+// Helper function to check if the user is authenticated in the current page context
+func (p *PageBuilder) IsAuthenticated() bool {
+	return p.Ctx.Get(isAuthenticatedCtxField) == true
 }
