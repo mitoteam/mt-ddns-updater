@@ -4,8 +4,15 @@ go 1.27.1
 
 require (
 	github.com/go-chi/chi/v5 v5.3.2
+	github.com/gorilla/sessions v1.4.0
+	github.com/miekg/dns v1.1.73
+	github.com/mitoteam/dhtml v0.9.1-beta
+	github.com/mitoteam/dhtmlbs v0.9.1-beta
+	github.com/mitoteam/dhtmlform v0.9.0-beta
 	github.com/mitoteam/goapp v1.0.11
 	github.com/mitoteam/mbr v0.9.0-beta
+	github.com/mitoteam/mttools v1.0.9
+	github.com/mitoteam/mtweb v0.0.0-20261006072139-7f436ff07471
 )
 
 require (
@@ -16,6 +23,7 @@ require (
 	github.com/cloudwego/base64x v0.1.7 // indirect
 	github.com/drhodes/golorem v0.0.0-20220328165741-da82e5b29246 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
+	github.com/elliotchance/orderedmap/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.15 // indirect
 	github.com/gin-contrib/sessions v1.1.2 // indirect
 	github.com/gin-contrib/sse v1.1.2 // indirect
@@ -30,7 +38,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
-	github.com/gorilla/sessions v1.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
@@ -38,7 +45,6 @@ require (
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
 	github.com/leodido/go-urn v1.5.0 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
-	github.com/mitoteam/mttools v1.0.9 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/ncruces/go-strftime v1.1.0 // indirect
@@ -53,6 +59,7 @@ require (
 	go.mongodb.org/mongo-driver/v2 v2.9.1 // indirect
 	golang.org/x/arch v0.31.0 // indirect
 	golang.org/x/crypto v0.57.0 // indirect
+	golang.org/x/exp v0.0.0-20260908205506-85c1c2202aba // indirect
 	golang.org/x/net v0.59.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
