@@ -41,6 +41,9 @@ func (c *RootController) Home() mbr.Route {
 		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
 			p.Main(dhtml.NewTag("h1").Append(app.App.AppName))
 			p.Main("SOMETHING goes here...")
+			p.Main(dhtml.Div().Append(
+				dhtml.NewLink(mbr.Url(RecordsRouteController.Test)).Label("test"),
+			))
 			return nil
 		}),
 	}
