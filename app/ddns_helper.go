@@ -42,10 +42,10 @@ func (h *DdnsHelper) GetLastReply() string {
 }
 
 func (h *DdnsHelper) UpdateARecordIpAddress(recordName string, newIP net.IP, newTtl uint32) error {
+	fullName := dns.Fqdn(recordName) + h.dnsZone
+
 	msg := new(dns.Msg)
 	msg.SetUpdate(h.dnsZone)
-
-	fullName := dns.Fqdn(recordName) + h.dnsZone
 
 	// Delete old A-record
 	rrRemove := &dns.A{
@@ -61,11 +61,15 @@ func (h *DdnsHelper) UpdateARecordIpAddress(recordName string, newIP net.IP, new
 	msg.Insert([]dns.RR{rrAdd})
 
 	// Add TSIG-key data
-	msg.SetTsig(h.TsigKeyName, h.TsigAlgo, 300, time.Now().Unix())
+	if h.TsigKeyName != "" {
+		msg.SetTsig(h.TsigKeyName, h.TsigAlgo, 300, time.Now().Unix())
+	}
 
 	// prepare network client
 	client := new(dns.Client)
-	client.TsigSecret = map[string]string{h.TsigKeyName: h.TsigSecret}
+	if h.TsigKeyName != "" {
+		client.TsigSecret = map[string]string{h.TsigKeyName: h.TsigSecret}
+	}
 	//client.Net = "tcp"
 
 	// save raw-message before sending it
@@ -73,18 +77,58 @@ func (h *DdnsHelper) UpdateARecordIpAddress(recordName string, newIP net.IP, new
 	h.lastReply = "" //and clear reply
 
 	// send message to DNS server
-	reply, _, err := client.Exchange(msg, h.dnsServerAddress)
+	response, _, err := client.Exchange(msg, h.dnsServerAddress)
 	if err != nil {
 		return err
 	}
 
 	//save RAW reply
-	h.lastReply = reply.String()
+	h.lastReply = response.String()
 
 	// check server's reply code (Rcode)
-	if reply.Rcode != dns.RcodeSuccess {
-		return fmt.Errorf("DNS Server rejected update. Rcode: %s", dns.RcodeToString[reply.Rcode])
+	if response.Rcode != dns.RcodeSuccess {
+		return fmt.Errorf("DNS Server rejected update. Rcode: %s", dns.RcodeToString[response.Rcode])
 	}
 
 	return nil
+}
+
+func (h *DdnsHelper) GetARecordIpAddress(recordName string) (ip net.IP, err error) {
+	fullName := dns.Fqdn(recordName) + h.dnsZone
+
+	msg := new(dns.Msg)
+	msg.SetQuestion(fullName, dns.TypeA)
+	msg.RecursionDesired = true
+
+	// prepare network client
+	client := new(dns.Client)
+
+	// save raw-message before sending it
+	h.lastMessage = msg.String()
+	h.lastReply = "" //and clear reply
+
+	// send message to DNS server
+	response, _, err := client.Exchange(msg, h.dnsServerAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	//save RAW reply
+	h.lastReply = response.String()
+
+	// check server's reply code (Rcode)
+	if response.Rcode != dns.RcodeSuccess {
+		return nil, fmt.Errorf("DNS Server rejected question. Rcode: %s", dns.RcodeToString[response.Rcode])
+	}
+
+	// find and IP in answer
+	for _, ans := range response.Answer {
+		// Is it an A-record (IPv4) ?
+		if aRecord, ok := ans.(*dns.A); ok {
+			// aRecord.A has net.IP
+			return aRecord.A, nil
+		}
+	}
+
+	return nil, fmt.Errorf("No IP address found in reply")
 }
