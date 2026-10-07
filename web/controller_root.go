@@ -5,8 +5,11 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/mitoteam/dhtml"
+	"github.com/mitoteam/dhtmlbs"
+	"github.com/mitoteam/goapp"
 	"github.com/mitoteam/mbr"
 	"github.com/mitoteam/mt-ddns-updater/app"
+	"github.com/mitoteam/mt-ddns-updater/model"
 	"github.com/mitoteam/mtweb"
 )
 
@@ -40,10 +43,31 @@ func (c *RootController) Home() mbr.Route {
 		PathPattern: "/",
 		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
 			p.Main(dhtml.NewTag("h1").Append(app.App.AppName))
-			p.Main("SOMETHING goes here...")
+
+			cards_list := dhtmlbs.NewCardList().Class("row-cols-lg-2")
+
+			// Keys card
+			cards_list.Add(
+				dhtmlbs.NewCard().
+					Header(mtweb.Icon(iconKey).Label("Keys")).
+					Body(c.renderKeysCard()),
+			)
+
+			// Webhooks card
+			cards_list.Add(
+				dhtmlbs.NewCard().
+					Header(mtweb.Icon(iconWebhook).Label("Webhooks")).
+					Body(c.renderWebhooksCard()),
+			)
+
+			// render cards
+			p.Main(cards_list)
+
+			//test
 			p.Main(dhtml.Div().Append(
 				dhtml.NewLink(mbr.Url(RecordsRouteController.Test)).Label("test"),
 			))
+
 			return nil
 		}),
 	}
@@ -82,4 +106,66 @@ func (c *RootController) Logout() mbr.Route {
 			return nil
 		},
 	}
+}
+
+func (c *RootController) renderKeysCard() (out dhtml.HtmlPiece) {
+	actions := dhtml.Div().Class("mt-3")
+
+	if cnt := goapp.CountOL[model.DdnsKey](); cnt > 0 {
+		out.Append(
+			dhtml.RenderValue("Keys added", cnt),
+		)
+
+		actions.Append(
+			dhtml.NewLink(mbr.Url(KeyRouteController.List)).
+				Class("me-3").
+				Label(mtweb.Icon(mtweb.FaIconList).Label("View keys")),
+		)
+	} else {
+		out.Append(
+			dhtml.Div().Append(dhtml.EmptyLabel("No keys added yet")),
+		)
+	}
+
+	actions.Append(
+		dhtml.NewLink(mbr.Url(KeyRouteController.Edit)).Label(mtweb.Icon(mtweb.FaIconAdd).Label("Add new key")),
+	)
+
+	out.Append(actions)
+
+	return out
+}
+
+func (c *RootController) renderWebhooksCard() (out dhtml.HtmlPiece) {
+	actions := dhtml.Div().Class("mt-3")
+
+	if cnt := goapp.CountOL[model.DdnsWebhook](); cnt > 0 {
+		out.Append(
+			dhtml.RenderValue("Webhooks added", cnt),
+		)
+
+		actions.Append(
+			dhtml.NewLink(mbr.Url(WebhookRouteController.List)).
+				Class("me-3").
+				Label(mtweb.Icon(mtweb.FaIconList).Label("View webhooks")),
+		)
+	} else {
+		out.Append(
+			dhtml.Div().Append(dhtml.EmptyLabel("No webhooks added yet")),
+		)
+	}
+
+	if key_cnt := goapp.CountOL[model.DdnsKey](); key_cnt > 0 {
+		actions.Append(
+			dhtml.NewLink(mbr.Url(WebhookRouteController.Edit)).Label(mtweb.Icon(mtweb.FaIconAdd).Label("Add new webhook")),
+		)
+	} else {
+		out.Append(dhtml.Div().Class("mt-3").Append(mtweb.RenderInfo("Webhooks can not be created without keys")))
+	}
+
+	if actions.ChildrenCount() > 0 {
+		out.Append(actions)
+	}
+
+	return out
 }
