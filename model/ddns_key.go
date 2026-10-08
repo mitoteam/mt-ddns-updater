@@ -58,3 +58,9 @@ func DdnsKeyAlgoOptions() (r map[string]any) {
 func (k *DdnsKey) GetAlgoName() string {
 	return keyAlgoList[k.Algo]
 }
+
+func (k *DdnsKey) WebhooksCount() int64 {
+	goapp.PreQuery[DdnsWebhook]().Where("key_id", k.ID)
+
+	return goapp.CountOL[DdnsWebhook]()
+}

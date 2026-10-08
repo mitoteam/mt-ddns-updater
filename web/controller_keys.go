@@ -44,6 +44,7 @@ func (c *KeyRouteControllerType) List() mbr.Route {
 				Header("Name").
 				Header("Algo").
 				Header("Secret").
+				Header("Webhooks").
 				Header("Description").
 				Header("") // Actions
 
@@ -52,7 +53,8 @@ func (c *KeyRouteControllerType) List() mbr.Route {
 
 				row.Cell(key.Name)
 				row.Cell(key.GetAlgoName())
-				row.Cell("[Secret Hidden]").Class("text-muted")
+				row.Cell("[hidden]").Class("text-muted")
+				row.Cell(key.WebhooksCount())
 				row.Cell(key.Description).Class("small-muted")
 
 				var actions dhtml.HtmlPiece
