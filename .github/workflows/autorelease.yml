@@ -10,7 +10,7 @@ jobs:
   AutoRelease:
     uses: mitoteam/shared-actions/.github/workflows/goapp-autorelease.yml@main
     with:
-      dist_name: "mt-checklist"
+      dist_name: "mt-ddns-updater"
       draft_release: true
     secrets: inherit
     permissions:
