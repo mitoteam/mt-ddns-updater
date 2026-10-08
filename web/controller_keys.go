@@ -42,12 +42,18 @@ func (c *KeyRouteControllerType) List() mbr.Route {
 			table.
 				EmptyLabel("no keys created yet").
 				Header("Name").
+				Header("Algo").
+				Header("Secret").
+				Header("Description").
 				Header("") // Actions
 
 			for _, key := range goapp.LoadOL[model.DdnsKey]() {
 				row := table.NewRow()
 
 				row.Cell(key.Name)
+				row.Cell(key.GetAlgoName())
+				row.Cell("[Secret Hidden]").Class("text-muted")
+				row.Cell(key.Description).Class("small-muted")
 
 				var actions dhtml.HtmlPiece
 
@@ -73,6 +79,9 @@ func (c *KeyRouteControllerType) Edit() mbr.Route {
 
 			if key.ID == 0 {
 				p.Title("New key")
+
+				//set default values for key
+				key.Algo = model.KeyAlgoSHA256
 			} else {
 				p.Title("Edit key")
 			}
