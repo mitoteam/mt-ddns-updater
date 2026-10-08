@@ -1,0 +1,17 @@
+name: AutoRelease
+
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+  workflow_dispatch:
+
+jobs:
+  AutoRelease:
+    uses: mitoteam/shared-actions/.github/workflows/goapp-autorelease.yml@main
+    with:
+      dist_name: "mt-checklist"
+      draft_release: true
+    secrets: inherit
+    permissions:
+      contents: write
