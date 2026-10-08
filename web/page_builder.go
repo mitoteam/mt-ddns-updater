@@ -13,6 +13,8 @@ import (
 
 type PageBuilder struct {
 	mtweb.PageBuilderBase
+
+	toolbar *mtweb.BtnPanelElement
 }
 
 func NewPageBuilder(ctx *mbr.MbrContext) *PageBuilder {
@@ -58,6 +60,15 @@ func CreatePageBuilderRouteHandler(buildPageF func(*PageBuilder) any) mbr.Router
 	}
 }
 
+// returns BtnPanelElement to be used as page toolbar
+func (p *PageBuilder) Toolbar() *mtweb.BtnPanelElement {
+	if p.toolbar == nil {
+		p.toolbar = mtweb.NewBtnPanel()
+	}
+
+	return p.toolbar
+}
+
 func (p *PageBuilder) render() error {
 	document := p.GetDocument().
 		Icon("/favicon.ico").
@@ -71,6 +82,12 @@ func (p *PageBuilder) render() error {
 	title := p.GetTitle()
 	if title != "" {
 		container.Append(dhtml.NewTag("h1").Append(title))
+	}
+
+	if p.toolbar != nil && !p.toolbar.IsEmpty() {
+		p.toolbar.Class("mb-3").Class("page-toolbar")
+
+		container.Append(p.toolbar)
 	}
 
 	container.Append(dhtml.Div().Class("region-main").Append(p.GetMain()))

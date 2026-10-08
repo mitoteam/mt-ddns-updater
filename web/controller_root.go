@@ -128,7 +128,7 @@ func (c *RootController) renderKeysCard() (out dhtml.HtmlPiece) {
 	}
 
 	actions.Append(
-		dhtml.NewLink(mbr.Url(KeyRouteController.Edit)).Label(mtweb.Icon(mtweb.FaIconAdd).Label("Add new key")),
+		dhtml.NewLink(mbr.Url(KeyRouteController.Edit, "key_id", 0)).Label(mtweb.Icon(mtweb.FaIconAdd).Label("Add new key")),
 	)
 
 	out.Append(actions)
