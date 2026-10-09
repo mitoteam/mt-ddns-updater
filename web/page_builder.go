@@ -106,8 +106,24 @@ func (p *PageBuilder) render() error {
 func (p *PageBuilder) renderHeader() (out dhtml.HtmlPiece) {
 	header := dhtml.Div().Class("region-header border bg-light p-3 mb-3").Attribute("role", "header")
 
-	header_left := dhtml.Div().
-		Append(dhtml.Div().Append(dhtml.NewLink(mbr.Url(RootCtl.Home)).Label(app.App.AppName).Class("text-decoration-none")))
+	site_logo := dhtml.Div().
+		Append(
+			dhtml.NewLink(mbr.Url(RootCtl.Home)).
+				Label(
+					dhtml.NewImg("/assets/images/logo.png").Height("48"),
+				),
+		)
+
+	site_name := dhtml.Div().
+		Append(
+			dhtml.NewLink(mbr.Url(RootCtl.Home)).
+				Class("text-decoration-none").
+				Label(app.App.AppName),
+		)
+
+	header_left := dhtml.Div().Class("d-flex", "gap-3").
+		Append(site_logo).
+		Append(site_name)
 
 	header_right := dhtml.Div().Class("text-end")
 
