@@ -5,6 +5,8 @@ import (
 
 	"github.com/miekg/dns"
 	"github.com/mitoteam/goapp"
+	"github.com/mitoteam/mttools"
+	"gorm.io/gorm"
 )
 
 type DdnsWebhook struct {
@@ -38,4 +40,11 @@ func (wh *DdnsWebhook) GetKey() *DdnsKey {
 
 func (wh *DdnsWebhook) FQDN() string {
 	return dns.Fqdn(wh.DnsRecordName) + dns.Fqdn(wh.DnsZoneName)
+}
+
+func (wh *DdnsWebhook) BeforeSave(tx *gorm.DB) (err error) {
+	if wh.SecureToken == "" {
+		wh.SecureToken = mttools.RandomString(64)
+	}
+	return
 }

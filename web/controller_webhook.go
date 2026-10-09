@@ -42,6 +42,8 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 			table.
 				EmptyLabel("no webhooks created yet").
 				Header("DNS Record FQDN").
+				Header("DNS Server").
+				Header("Key").
 				Header("Description").
 				Header("") // Actions
 
@@ -49,6 +51,8 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 				row := table.NewRow()
 
 				row.Cell(wh.FQDN())
+				row.Cell(wh.DnsServerAddress)
+				row.Cell(mtweb.Icon(iconKey).Label(wh.GetKey().Name))
 				row.Cell(wh.Description).Class("small-muted")
 
 				var actions dhtml.HtmlPiece
@@ -80,7 +84,11 @@ func (c *WebhookRouteControllerType) Edit() mbr.Route {
 			if wh.ID == 0 {
 				p.Title("New webhook")
 
-				//set defaults
+				//pre select key if there is just one
+				if goapp.CountOL[model.DdnsKey]() == 1 {
+					key := goapp.FirstO[model.DdnsKey]()
+					wh.KeyID = key.ID
+				}
 			} else {
 				p.Title("Edit webhook")
 			}
