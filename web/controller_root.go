@@ -157,7 +157,7 @@ func (c *RootController) renderWebhooksCard() (out dhtml.HtmlPiece) {
 
 	if key_cnt := goapp.CountOL[model.DdnsKey](); key_cnt > 0 {
 		actions.Append(
-			dhtml.NewLink(mbr.Url(WebhookRouteController.Edit)).Label(mtweb.Icon(mtweb.FaIconAdd).Label("Add new webhook")),
+			dhtml.NewLink(mbr.Url(WebhookRouteController.Edit, "webhook_id", 0)).Label(mtweb.Icon(mtweb.FaIconAdd).Label("Add new webhook")),
 		)
 	} else {
 		out.Append(dhtml.Div().Class("mt-3").Append(mtweb.RenderInfo("Webhooks can not be created without keys")))
