@@ -98,7 +98,7 @@ var formWebhookTestUpdate = &dhtmlform.FormHandler{
 
 		if helperI != nil {
 			// there is helper set, show results
-			helper := helperI.(*app.WebhookHelper)
+			helper := helperI.(*app.WebhookService)
 			var msg *dhtml.HtmlPiece
 
 			if err == nil {
@@ -147,7 +147,7 @@ var formWebhookTestUpdate = &dhtmlform.FormHandler{
 		ipString := fd.GetValue("ip").(string)
 		ip := net.ParseIP(ipString)
 
-		helper := app.NewWebhookHelper(wh)
+		helper := app.NewWebhookService(wh)
 		fd.SetParam("helper", helper)
 
 		err := helper.UpdateIpAddress(ip)

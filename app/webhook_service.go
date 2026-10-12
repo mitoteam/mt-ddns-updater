@@ -11,27 +11,27 @@ import (
 
 // DDNS logic for webhook
 
-type WebhookHelper struct {
+type WebhookService struct {
 	webhook *model.DdnsWebhook
 
 	lastMessage string
 	lastReply   string
 }
 
-func NewWebhookHelper(webhook *model.DdnsWebhook) *WebhookHelper {
-	return &WebhookHelper{webhook: webhook}
+func NewWebhookService(webhook *model.DdnsWebhook) *WebhookService {
+	return &WebhookService{webhook: webhook}
 }
 
-func (h *WebhookHelper) GetLastMessage() string {
-	return h.lastMessage
+func (ws *WebhookService) GetLastMessage() string {
+	return ws.lastMessage
 }
 
-func (h *WebhookHelper) GetLastReply() string {
-	return h.lastReply
+func (ws *WebhookService) GetLastReply() string {
+	return ws.lastReply
 }
 
-func (h *WebhookHelper) QuestionIpAddress() (net.IP, error) {
-	fullName := h.webhook.FQDN()
+func (ws *WebhookService) QuestionIpAddress() (net.IP, error) {
+	fullName := ws.webhook.FQDN()
 
 	msg := new(dns.Msg)
 	msg.SetQuestion(fullName, dns.TypeA)
@@ -41,17 +41,17 @@ func (h *WebhookHelper) QuestionIpAddress() (net.IP, error) {
 	client := new(dns.Client)
 
 	// save raw-message before sending it
-	h.lastMessage = msg.String()
-	h.lastReply = "" //and clear reply
+	ws.lastMessage = msg.String()
+	ws.lastReply = "" //and clear reply
 
 	// send message to DNS server
-	response, _, err := client.Exchange(msg, h.webhook.DnsServerAddress)
+	response, _, err := client.Exchange(msg, ws.webhook.DnsServerAddress)
 	if err != nil {
 		return nil, err
 	}
 
 	//save RAW reply
-	h.lastReply = response.String()
+	ws.lastReply = response.String()
 
 	// check server's reply code (Rcode)
 	if response.Rcode != dns.RcodeSuccess {
@@ -70,11 +70,11 @@ func (h *WebhookHelper) QuestionIpAddress() (net.IP, error) {
 	return nil, fmt.Errorf("No IP address found in reply")
 }
 
-func (h *WebhookHelper) UpdateIpAddress(ip net.IP) error {
-	fullName := h.webhook.FQDN()
+func (ws *WebhookService) UpdateIpAddress(ip net.IP) error {
+	fullName := ws.webhook.FQDN()
 
 	msg := new(dns.Msg)
-	msg.SetUpdate(dns.Fqdn(h.webhook.DnsZoneName))
+	msg.SetUpdate(dns.Fqdn(ws.webhook.DnsZoneName))
 
 	// Delete old A-record
 	rrRemove := &dns.A{
@@ -90,7 +90,7 @@ func (h *WebhookHelper) UpdateIpAddress(ip net.IP) error {
 	msg.Insert([]dns.RR{rrAdd})
 
 	// Add TSIG-key data
-	key := h.webhook.GetKey()
+	key := ws.webhook.GetKey()
 	if key != nil {
 		msg.SetTsig(dns.Fqdn(key.Name), dns.Fqdn(key.GetAlgoName()), 300, time.Now().Unix())
 	}
@@ -103,17 +103,17 @@ func (h *WebhookHelper) UpdateIpAddress(ip net.IP) error {
 	//client.Net = "tcp"
 
 	// save raw-message before sending it
-	h.lastMessage = msg.String()
-	h.lastReply = "" //and clear reply
+	ws.lastMessage = msg.String()
+	ws.lastReply = "" //and clear reply
 
 	// send message to DNS server
-	response, _, err := client.Exchange(msg, h.webhook.DnsServerAddress)
+	response, _, err := client.Exchange(msg, ws.webhook.DnsServerAddress)
 	if err != nil {
 		return err
 	}
 
 	//save RAW reply
-	h.lastReply = response.String()
+	ws.lastReply = response.String()
 
 	// check server's reply code (Rcode)
 	if response.Rcode != dns.RcodeSuccess {

@@ -63,11 +63,6 @@ func (c *RootController) Home() mbr.Route {
 			// render cards
 			p.Main(cards_list)
 
-			//test
-			p.Main(dhtml.Div().Append(
-				dhtml.NewLink(mbr.Url(RecordsRouteController.Test)).Label("test"),
-			))
-
 			return nil
 		}),
 	}

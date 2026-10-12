@@ -165,7 +165,7 @@ func (c *WebhookRouteControllerType) Question() mbr.Route {
 					mtweb.FaIconBack, wh.FQDN(),
 				)
 
-			helper := app.NewWebhookHelper(wh)
+			helper := app.NewWebhookService(wh)
 			ip, err := helper.QuestionIpAddress()
 
 			piece := dhtml.NewHtmlPiece().
