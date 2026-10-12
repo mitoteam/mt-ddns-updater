@@ -1,6 +1,7 @@
 package model
 
 import (
+	"net"
 	"reflect"
 
 	"github.com/miekg/dns"
@@ -17,7 +18,7 @@ type DdnsWebhook struct {
 	DnsServerAddress string
 	DnsRecordName    string
 	DnsZoneName      string
-	InitialIp        string
+	ActualIp         string
 
 	//fk
 	KeyID int64    `gorm:"not null;index"`
@@ -38,13 +39,28 @@ func (wh *DdnsWebhook) GetKey() *DdnsKey {
 	return wh.Key
 }
 
-func (wh *DdnsWebhook) FQDN() string {
-	return dns.Fqdn(wh.DnsRecordName) + dns.Fqdn(wh.DnsZoneName)
-}
-
 func (wh *DdnsWebhook) BeforeSave(tx *gorm.DB) (err error) {
 	if wh.SecureToken == "" {
 		wh.SecureToken = mttools.RandomString(64)
 	}
-	return
+
+	if wh.ActualIp == "" {
+		wh.ActualIp = "0.0.0.0"
+	}
+
+	return nil //no error
+}
+
+func (wh *DdnsWebhook) FQDN() string {
+	return dns.Fqdn(wh.DnsRecordName) + dns.Fqdn(wh.DnsZoneName)
+}
+
+func (wh *DdnsWebhook) GetParsedActualIp() net.IP {
+	ip := net.ParseIP(wh.ActualIp)
+
+	if ip == nil {
+		ip = net.ParseIP("0.0.0.0")
+	}
+
+	return ip
 }

@@ -44,6 +44,7 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 			table.
 				EmptyLabel("no webhooks created yet").
 				Header("DNS Record FQDN").
+				Header("Actual IP").
 				Header("DNS Server").
 				Header("Key").
 				Header("Description").
@@ -53,6 +54,7 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 				row := table.NewRow()
 
 				row.Cell(wh.FQDN())
+				row.Cell(wh.ActualIp)
 				row.Cell(wh.DnsServerAddress)
 				row.Cell(mtweb.Icon(iconKey).Label(wh.GetKey().Name))
 				row.Cell(wh.Description).Class("small-muted")
@@ -175,6 +177,9 @@ func (c *WebhookRouteControllerType) Question() mbr.Route {
 					Append(dhtml.NewTag("pre").Append(helper.GetLastReply()))
 
 				//log.Println(s)
+
+				wh.ActualIp = ip.String()
+				goapp.SaveObject(wh)
 			} else {
 				s := fmt.Sprintf("Error during DNS query: %v", err)
 				piece.

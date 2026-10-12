@@ -1,6 +1,9 @@
 package web
 
 import (
+	"net"
+	"strings"
+
 	"github.com/mitoteam/dhtml"
 	"github.com/mitoteam/dhtmlbs"
 	"github.com/mitoteam/dhtmlform"
@@ -31,6 +34,10 @@ var formWebhookEdit = &dhtmlform.FormHandler{
 					Label("DNS Zone").
 					Default(wh.DnsZoneName).
 					Require(),
+				dhtmlbs.NewTextInput("actual_ip").
+					Label("Actual IP").
+					Default(wh.ActualIp).
+					Note("example: 127.0.0.1, leave empty to use 0.0.0.0"),
 				dhtmlbs.NewTextInput("server_address").
 					Label("DNS Server Address and Port").
 					Default(wh.DnsServerAddress).
@@ -44,11 +51,25 @@ var formWebhookEdit = &dhtmlform.FormHandler{
 		)
 	},
 
+	ValidateF: func(fd *dhtmlform.FormData) {
+		ipString := strings.TrimSpace(fd.GetValue("actual_ip").(string))
+
+		if ipString == "" {
+			ipString = "0.0.0.0"
+			fd.SetControlValue("actual_ip", ipString) // set it back
+		}
+
+		if ip := net.ParseIP(ipString); ip == nil {
+			fd.SetError("actual_ip", "Incorrect IP address value")
+		}
+	},
+
 	SubmitF: func(fd *dhtmlform.FormData) {
 		wh := fd.GetArg("Webhook").(*model.DdnsWebhook)
 
 		wh.DnsRecordName = fd.GetValue("record_name").(string)
 		wh.DnsZoneName = fd.GetValue("zone_name").(string)
+		wh.ActualIp = fd.GetValue("actual_ip").(string)
 		wh.DnsServerAddress = fd.GetValue("server_address").(string)
 
 		if key_id, ok := mttools.AnyToInt64Ok(fd.GetValue("key")); ok {
