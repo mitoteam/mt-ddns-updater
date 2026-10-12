@@ -44,7 +44,7 @@ func (c *RootController) Home() mbr.Route {
 		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
 			p.Main(dhtml.NewTag("h1").Append(app.App.AppName))
 
-			cards_list := dhtmlbs.NewCardList().Class("row-cols-lg-2")
+			cards_list := dhtmlbs.NewGridCards().Class("row-cols-lg-2")
 
 			// Keys card
 			cards_list.Add(
