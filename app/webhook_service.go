@@ -84,7 +84,7 @@ func (ws *WebhookService) UpdateIpAddress(ip net.IP) error {
 
 	// Add new A-Record with new IP and TTL
 	rrAdd := &dns.A{
-		Hdr: dns.RR_Header{Name: fullName, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: 55},
+		Hdr: dns.RR_Header{Name: fullName, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: ws.webhook.Ttl},
 		A:   ip,
 	}
 	msg.Insert([]dns.RR{rrAdd})

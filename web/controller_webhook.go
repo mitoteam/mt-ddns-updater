@@ -28,15 +28,29 @@ func (c *RootController) WebhookSubcontroller() mbr.Route {
 	return mbr.Route{PathPattern: "/webhook", ChildController: WebhookRouteController}
 }
 
+func baseToolbar(p *PageBuilder, wh *model.DdnsWebhook) *mtweb.BtnPanelElement {
+	t := p.Toolbar().
+		AddIconBtn(mbr.Url(WebhookRouteController.List), iconWebhook, "All Webhooks")
+
+	if wh != nil {
+		t.AddIconBtn(
+			mbr.Url(WebhookRouteController.View, "webhook_id", wh.ID), iconWebhook, wh.FQDN(),
+		)
+	}
+
+	return t
+}
+
 func (c *WebhookRouteControllerType) List() mbr.Route {
 	return mbr.Route{
 		PathPattern: "/",
 		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
 			p.Title("Webhooks")
 
-			p.Toolbar().AddIconBtn(
-				mbr.Url(WebhookRouteController.Edit, "webhook_id", 0), mtweb.FaIconAdd, "New Webhook",
-			)
+			baseToolbar(p, nil).
+				AddIconBtn(
+					mbr.Url(WebhookRouteController.Edit, "webhook_id", 0), mtweb.FaIconAdd, "New Webhook",
+				)
 
 			table := mtweb.NewTable().
 				CountTitle("Webhooks added")
@@ -45,6 +59,7 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 				EmptyLabel("no webhooks created yet").
 				Header("DNS Record FQDN").
 				Header("Actual IP").
+				Header("TTL").
 				Header("DNS Server").
 				Header("Key").
 				Header("Description").
@@ -55,6 +70,7 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 
 				row.Cell(wh.FQDN())
 				row.Cell(wh.ActualIp)
+				row.Cell(wh.Ttl)
 				row.Cell(wh.DnsServerAddress)
 				row.Cell(mtweb.Icon(iconKey).Label(wh.GetKey().Name))
 				row.Cell(wh.Description).Class("small-muted")
@@ -132,8 +148,11 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 
 			p.Title(wh.FQDN())
 
-			p.Toolbar().
-				AddIconBtn(mbr.Url(WebhookRouteController.List), iconWebhook, "All Webhooks").
+			baseToolbar(p, nil).
+				AddIconBtn(
+					mbr.Url(WebhookRouteController.Edit, "webhook_id", wh.ID),
+					mtweb.FaIconEdit, "Edit",
+				).
 				AddIconBtn(
 					mbr.Url(WebhookRouteController.Question, "webhook_id", wh.ID),
 					mtweb.FaIconSearch, "Request Current IP",
@@ -159,11 +178,7 @@ func (c *WebhookRouteControllerType) Question() mbr.Route {
 
 			p.Title(wh.FQDN())
 
-			p.Toolbar().
-				AddIconBtn(
-					mbr.Url(WebhookRouteController.View, "webhook_id", wh.ID),
-					mtweb.FaIconBack, wh.FQDN(),
-				)
+			baseToolbar(p, wh)
 
 			helper := app.NewWebhookService(wh)
 			ip, err := helper.QuestionIpAddress()
@@ -207,11 +222,7 @@ func (c *WebhookRouteControllerType) TestUpdate() mbr.Route {
 
 			p.Title(wh.FQDN())
 
-			p.Toolbar().
-				AddIconBtn(
-					mbr.Url(WebhookRouteController.View, "webhook_id", wh.ID),
-					mtweb.FaIconBack, wh.FQDN(),
-				)
+			baseToolbar(p, wh)
 
 			fc := p.NewFormContext().
 				SetArg("Webhook", wh)

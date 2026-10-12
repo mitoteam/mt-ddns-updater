@@ -39,6 +39,7 @@ var formWebhookEdit = &dhtmlform.FormHandler{
 					Label("Actual IP").
 					Default(wh.ActualIp).
 					Note("example: 127.0.0.1, leave empty to use 0.0.0.0"),
+				dhtmlbs.NewTextInput("ttl").Label("TTL").Default(wh.Ttl).Require(),
 				dhtmlbs.NewTextInput("server_address").
 					Label("DNS Server Address and Port").
 					Default(wh.DnsServerAddress).
@@ -63,6 +64,14 @@ var formWebhookEdit = &dhtmlform.FormHandler{
 		if ip := net.ParseIP(ipString); ip == nil {
 			fd.SetError("actual_ip", "Incorrect IP address value")
 		}
+
+		ttl := mttools.AnyToIntOrZero(fd.GetValue("ttl"))
+
+		if ttl < 1 || ttl > 86400 {
+			fd.SetError("ttl", "TTL should be between 1 and 86400")
+		} else {
+			fd.SetControlValue("ttl", ttl) // set it back
+		}
 	},
 
 	SubmitF: func(fd *dhtmlform.FormData) {
@@ -71,6 +80,7 @@ var formWebhookEdit = &dhtmlform.FormHandler{
 		wh.DnsRecordName = fd.GetValue("record_name").(string)
 		wh.DnsZoneName = fd.GetValue("zone_name").(string)
 		wh.ActualIp = fd.GetValue("actual_ip").(string)
+		wh.Ttl = uint32(fd.GetValue("ttl").(int))
 		wh.DnsServerAddress = fd.GetValue("server_address").(string)
 
 		if key_id, ok := mttools.AnyToInt64Ok(fd.GetValue("key")); ok {

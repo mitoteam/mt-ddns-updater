@@ -19,6 +19,7 @@ type DdnsWebhook struct {
 	DnsRecordName    string
 	DnsZoneName      string
 	ActualIp         string
+	Ttl              uint32
 
 	//fk
 	KeyID int64    `gorm:"not null;index"`
