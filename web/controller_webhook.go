@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/miekg/dns"
 	"github.com/mitoteam/dhtml"
+	"github.com/mitoteam/dhtmlbs"
 	"github.com/mitoteam/goapp"
 	"github.com/mitoteam/mbr"
 	"github.com/mitoteam/mt-ddns-updater/app"
@@ -163,7 +165,16 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 				)
 
 			//values
-			p.Main("hja")
+			lc := dhtmlbs.NewListCard().Header(wh.FQDN()).
+				Add(dhtml.RenderValue("DNS Record Name", dns.Fqdn(wh.DnsRecordName))).
+				Add(dhtml.RenderValue("DNS Zone Name", dns.Fqdn(wh.DnsZoneName))).
+				Add(dhtml.RenderValue("DNS Server Address", wh.DnsServerAddress))
+
+			grid := dhtmlbs.NewGridCards().Class("row-cols-lg-2")
+
+			grid.Add(lc)
+
+			p.Main(grid)
 
 			return nil
 		}),

@@ -44,24 +44,24 @@ func (c *RootController) Home() mbr.Route {
 		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
 			p.Main(dhtml.NewTag("h1").Append(app.App.AppName))
 
-			cards_list := dhtmlbs.NewGridCards().Class("row-cols-lg-2")
+			grid := dhtmlbs.NewGridCards().Class("row-cols-lg-2")
 
 			// Keys card
-			cards_list.Add(
+			grid.Add(
 				dhtmlbs.NewCard().
 					Header(mtweb.Icon(iconKey).Label("Keys")).
 					Body(c.renderKeysCard()),
 			)
 
 			// Webhooks card
-			cards_list.Add(
+			grid.Add(
 				dhtmlbs.NewCard().
 					Header(mtweb.Icon(iconWebhook).Label("Webhooks")).
 					Body(c.renderWebhooksCard()),
 			)
 
 			// render cards
-			p.Main(cards_list)
+			p.Main(grid)
 
 			return nil
 		}),
