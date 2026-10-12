@@ -137,6 +137,10 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 				AddIconBtn(
 					mbr.Url(WebhookRouteController.Question, "webhook_id", wh.ID),
 					mtweb.FaIconSearch, "Request Current IP",
+				).
+				AddIconBtn(
+					mbr.Url(WebhookRouteController.TestUpdate, "webhook_id", wh.ID),
+					mtweb.FaIconUpdate, "Test Update",
 				)
 
 			//values
@@ -189,6 +193,30 @@ func (c *WebhookRouteControllerType) Question() mbr.Route {
 			}
 
 			p.Main(piece)
+
+			return nil
+		}),
+	}
+}
+
+func (c *WebhookRouteControllerType) TestUpdate() mbr.Route {
+	return mbr.Route{
+		PathPattern: "/{webhook_id}/test-update",
+		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
+			wh := goapp.LoadOMust[model.DdnsWebhook](p.Ctx.Request().PathValue("webhook_id"))
+
+			p.Title(wh.FQDN())
+
+			p.Toolbar().
+				AddIconBtn(
+					mbr.Url(WebhookRouteController.View, "webhook_id", wh.ID),
+					mtweb.FaIconBack, wh.FQDN(),
+				)
+
+			fc := p.NewFormContext().
+				SetArg("Webhook", wh)
+
+			p.Main(formWebhookTestUpdate.Render(fc))
 
 			return nil
 		}),

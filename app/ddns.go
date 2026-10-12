@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/miekg/dns"
 	"github.com/mitoteam/mt-ddns-updater/model"
@@ -29,7 +30,7 @@ func (h *WebhookHelper) GetLastReply() string {
 	return h.lastReply
 }
 
-func (h *WebhookHelper) QuestionIpAddress() (ip net.IP, err error) {
+func (h *WebhookHelper) QuestionIpAddress() (net.IP, error) {
 	fullName := h.webhook.FQDN()
 
 	msg := new(dns.Msg)
@@ -67,4 +68,57 @@ func (h *WebhookHelper) QuestionIpAddress() (ip net.IP, err error) {
 	}
 
 	return nil, fmt.Errorf("No IP address found in reply")
+}
+
+func (h *WebhookHelper) UpdateIpAddress(ip net.IP) error {
+	fullName := h.webhook.FQDN()
+
+	msg := new(dns.Msg)
+	msg.SetUpdate(dns.Fqdn(h.webhook.DnsZoneName))
+
+	// Delete old A-record
+	rrRemove := &dns.A{
+		Hdr: dns.RR_Header{Name: fullName, Rrtype: dns.TypeA, Class: dns.ClassANY, Ttl: 0},
+	}
+	msg.RemoveName([]dns.RR{rrRemove})
+
+	// Add new A-Record with new IP and TTL
+	rrAdd := &dns.A{
+		Hdr: dns.RR_Header{Name: fullName, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: 55},
+		A:   ip,
+	}
+	msg.Insert([]dns.RR{rrAdd})
+
+	// Add TSIG-key data
+	key := h.webhook.GetKey()
+	if key != nil {
+		msg.SetTsig(dns.Fqdn(key.Name), dns.Fqdn(key.GetAlgoName()), 300, time.Now().Unix())
+	}
+
+	// prepare network client
+	client := new(dns.Client)
+	if key != nil {
+		client.TsigSecret = map[string]string{dns.Fqdn(key.Name): key.Secret}
+	}
+	//client.Net = "tcp"
+
+	// save raw-message before sending it
+	h.lastMessage = msg.String()
+	h.lastReply = "" //and clear reply
+
+	// send message to DNS server
+	response, _, err := client.Exchange(msg, h.webhook.DnsServerAddress)
+	if err != nil {
+		return err
+	}
+
+	//save RAW reply
+	h.lastReply = response.String()
+
+	// check server's reply code (Rcode)
+	if response.Rcode != dns.RcodeSuccess {
+		return fmt.Errorf("DNS Server rejected update. Rcode: %s", dns.RcodeToString[response.Rcode])
+	}
+
+	return nil //no error
 }
