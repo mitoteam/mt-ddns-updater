@@ -1,3 +1,2 @@
 // Main application code
-
-//nothing yet added
+//console.log("mt-ddns-updater");
