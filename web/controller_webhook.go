@@ -164,8 +164,11 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 					mtweb.FaIconUpdate, "Test Update",
 				)
 
+			grid := dhtmlbs.NewGridCards().Class("row-cols-lg-2")
+
 			//values
-			lc := dhtmlbs.NewListCard().Header(wh.FQDN()).
+			lc := dhtmlbs.NewListCard().
+				Header(mtweb.Icon(iconWebhook).Label(wh.FQDN())).
 				Add(dhtml.RenderValue("DNS Record Name", dns.Fqdn(wh.DnsRecordName))).
 				Add(dhtml.RenderValue("DNS Zone Name", dns.Fqdn(wh.DnsZoneName))).
 				Add(dhtml.RenderValue("TTL", wh.Ttl)).
@@ -182,10 +185,16 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 				lc.Add(dhtml.Div().Class("small-muted").Append(wh.Description))
 			}
 
-			grid := dhtmlbs.NewGridCards().Class("row-cols-lg-2")
+			grid.Add(lc)
+
+			//info
+			lc = dhtmlbs.NewListCard().
+				Header(mtweb.Icon(mtweb.FaIconInfo).Label("Info")).
+				Add(dhtml.RenderValue("Actual IP", wh.ActualIp))
 
 			grid.Add(lc)
 
+			// add grid to page
 			p.Main(grid)
 
 			return nil
