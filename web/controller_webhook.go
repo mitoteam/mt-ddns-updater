@@ -168,7 +168,19 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 			lc := dhtmlbs.NewListCard().Header(wh.FQDN()).
 				Add(dhtml.RenderValue("DNS Record Name", dns.Fqdn(wh.DnsRecordName))).
 				Add(dhtml.RenderValue("DNS Zone Name", dns.Fqdn(wh.DnsZoneName))).
+				Add(dhtml.RenderValue("TTL", wh.Ttl)).
 				Add(dhtml.RenderValue("DNS Server Address", wh.DnsServerAddress))
+
+			if key := wh.GetKey(); key != nil {
+				lc.Add(dhtml.RenderValue(
+					mtweb.Icon(iconKey).Label("Key"),
+					key.Name+" ("+key.GetAlgoName()+")",
+				))
+			}
+
+			if wh.Description != "" {
+				lc.Add(dhtml.Div().Class("small-muted").Append(wh.Description))
+			}
 
 			grid := dhtmlbs.NewGridCards().Class("row-cols-lg-2")
 
