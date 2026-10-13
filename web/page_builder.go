@@ -74,6 +74,8 @@ func (p *PageBuilder) render() error {
 		Icon("/favicon.ico").
 		Stylesheet("/assets/css/style.css")
 
+	document.Script("/assets/script.min.js")
+
 	container := dhtml.Div().Class("container my-3")
 
 	container.Append(p.renderHeader())
@@ -95,10 +97,6 @@ func (p *PageBuilder) render() error {
 	container.Append(p.renderFooter())
 
 	document.Body().Append(container)
-
-	//script at the bottom
-	document.Body().
-		Append(dhtml.NewTag("script").Attribute("src", "/assets/script.min.js"))
 
 	return nil
 }
