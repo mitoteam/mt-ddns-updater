@@ -17,7 +17,7 @@ include internal/goapp/Makefile.inc.mk
 assets:
 	@echo "Building assets"
 	sass --stop-on-error --no-source-map --style=compressed --silence-deprecation "color-functions,global-builtin,if-function,import" web/assets/css/
-	npx --quiet terser web/assets/js-src/main.js --mangle --compress --output web/assets/script.min.js
+	npx --quiet terser internal/mtweb/js/tools.js web/assets/js-src/main.js --mangle --compress --output web/assets/script.min.js
 
 .PHONY: clean-assets
 clean-assets:
