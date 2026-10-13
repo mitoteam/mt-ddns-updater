@@ -34,8 +34,9 @@ go.sum
 *.*~
 
 
-# data files, settings
+# data files, settings, state files
 data.db
 data.db-journal
 .settings.yml
 .settings.*.yml
+package-lock.json
