@@ -6,16 +6,17 @@ go 1.27.1
 //replace github.com/mitoteam/mttools => ../mttools
 
 require (
-	github.com/go-chi/chi/v5 v5.3.2
+	github.com/go-chi/chi/v5 v5.4.0
 	github.com/gorilla/sessions v1.4.0
 	github.com/miekg/dns v1.1.73
-	github.com/mitoteam/dhtml v0.9.5-rc
-	github.com/mitoteam/dhtmlbs v0.9.2-beta
+	github.com/mitoteam/dhtml v0.9.6-rc
+	github.com/mitoteam/dhtmlbs v0.9.3-beta
 	github.com/mitoteam/dhtmlform v0.9.2-beta
-	github.com/mitoteam/goapp v1.0.12
+	github.com/mitoteam/goapp v1.0.13
 	github.com/mitoteam/mbr v0.9.2-rc
 	github.com/mitoteam/mttools v1.0.10
-	github.com/mitoteam/mtweb v0.0.0-20261007150918-e7d7ee1f628c
+	github.com/mitoteam/mtweb v0.0.0-20261013140727-881dfbce71ac
+	gorm.io/gorm v1.31.2
 )
 
 require (
@@ -60,16 +61,15 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.2 // indirect
 	go.mongodb.org/mongo-driver/v2 v2.9.2 // indirect
-	golang.org/x/arch v0.31.0 // indirect
-	golang.org/x/crypto v0.57.0 // indirect
-	golang.org/x/exp v0.0.0-20261007192929-f45ad48fbe92 // indirect
-	golang.org/x/net v0.59.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/arch v0.32.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/exp v0.0.0-20261011100332-faecfb24eb49 // indirect
+	golang.org/x/net v0.61.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/gorm v1.31.2 // indirect
-	modernc.org/libc v1.77.1 // indirect
+	modernc.org/libc v1.78.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.12.1 // indirect
 	modernc.org/sqlite v1.60.1 // indirect
