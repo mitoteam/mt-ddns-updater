@@ -12,6 +12,7 @@ jobs:
     with:
       dist_name: "mt-ddns-updater"
       draft_release: true
+      install_sass: true
     secrets: inherit
     permissions:
       contents: write
