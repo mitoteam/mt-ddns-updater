@@ -26,5 +26,8 @@
     "editor.rulers": [120,200],
 		"commentAnchors.showCursor": true,
 		"commentAnchors.tags.separators": [" ", ": ", ":"],
-		"commentAnchors.tags.matchCase": false
+		"commentAnchors.tags.matchCase": false,
+    "[go]": {
+        "editor.foldingStrategy": "indentation"
+    }
 }
