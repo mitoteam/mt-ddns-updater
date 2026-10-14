@@ -1,8 +1,6 @@
 package web
 
 import (
-	"net/http"
-
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/mitoteam/dhtml"
 	"github.com/mitoteam/dhtmlbs"
@@ -97,7 +95,7 @@ func (c *RootController) Logout() mbr.Route {
 				return err
 			}
 
-			ctx.RedirectRoute(http.StatusFound, RootCtl.Home)
+			ctx.RedirectRoute(RootCtl.Home)
 			return nil
 		},
 	}

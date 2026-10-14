@@ -41,10 +41,21 @@ type DdnsWebhookLog struct {
 	Kind    LogKindType `gorm:"type:integer;not null"`
 	Message string
 	Reply   string
+	Error   string
+	Ip      string
 }
 
 func init() {
 	goapp.DbSchema.AddModel(reflect.TypeFor[DdnsWebhookLog]())
+}
+
+func NewWebhookLog(webhook *DdnsWebhook, kind LogKindType) *DdnsWebhookLog {
+	log := DdnsWebhookLog{
+		WebhookID: webhook.ID,
+		Kind:      kind,
+	}
+
+	return &log
 }
 
 func (o *DdnsWebhookLog) GetWebhook() *DdnsWebhook {

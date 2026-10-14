@@ -1,8 +1,6 @@
 package web
 
 import (
-	"net/http"
-
 	"github.com/mitoteam/dhtml"
 	"github.com/mitoteam/goapp"
 	"github.com/mitoteam/mbr"
@@ -104,7 +102,7 @@ func (c *KeyRouteControllerType) Delete() mbr.Route {
 		PathPattern: "/{key_id}/delete",
 		HandleF: func(ctx *mbr.MbrContext) any {
 			goapp.DeleteObject(goapp.LoadOMust[model.DdnsKey](ctx.Request().PathValue("key_id")))
-			ctx.RedirectRoute(http.StatusFound, KeyRouteController.List)
+			ctx.RedirectRoute(KeyRouteController.List)
 			return nil
 		},
 	}

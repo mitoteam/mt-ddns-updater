@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
+	"github.com/mitoteam/goapp"
 	"github.com/mitoteam/mt-ddns-updater/model"
 )
 
@@ -30,44 +31,52 @@ func (ws *WebhookService) GetLastReply() string {
 	return ws.lastReply
 }
 
-func (ws *WebhookService) QuestionIpAddress() (net.IP, error) {
+func (ws *WebhookService) QuestionIpAddress() (log *model.DdnsWebhookLog) {
 	fullName := ws.webhook.FQDN()
 
 	msg := new(dns.Msg)
 	msg.SetQuestion(fullName, dns.TypeA)
 	msg.RecursionDesired = true
 
-	// prepare network client
+	// prepare network client and new log entry
 	client := new(dns.Client)
+	log = model.NewWebhookLog(ws.webhook, model.LogKindQuestionGui)
 
 	// save raw-message before sending it
-	ws.lastMessage = msg.String()
-	ws.lastReply = "" //and clear reply
+	log.Message = msg.String()
 
 	// send message to DNS server
 	response, _, err := client.Exchange(msg, ws.webhook.DnsServerAddress)
 	if err != nil {
-		return nil, err
+		log.Error = err.Error()
+		goapp.SaveObject(log)
+		return log
 	}
 
 	//save RAW reply
-	ws.lastReply = response.String()
+	log.Reply = response.String()
 
 	// check server's reply code (Rcode)
 	if response.Rcode != dns.RcodeSuccess {
-		return nil, fmt.Errorf("DNS Server rejected question. Rcode: %s", dns.RcodeToString[response.Rcode])
+		log.Error = fmt.Sprintf("DNS Server rejected question. Rcode: %s", dns.RcodeToString[response.Rcode])
+		goapp.SaveObject(log)
+		return log
 	}
 
-	// find and IP in answer
+	// find an IP in answer
 	for _, ans := range response.Answer {
 		// Is it an A-record (IPv4) ?
 		if aRecord, ok := ans.(*dns.A); ok {
-			// aRecord.A has net.IP
-			return aRecord.A, nil
+			// aRecord.A is net.IP
+			log.Ip = aRecord.A.String()
 		}
 	}
 
-	return nil, fmt.Errorf("No IP address found in reply")
+	if log.Ip == "" {
+		log.Error = "No IP address found in reply"
+	}
+	goapp.SaveObject(log)
+	return log
 }
 
 func (ws *WebhookService) UpdateIpAddress(ip net.IP) error {

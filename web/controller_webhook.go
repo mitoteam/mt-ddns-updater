@@ -1,9 +1,6 @@
 package web
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/miekg/dns"
 	"github.com/mitoteam/dhtml"
 	"github.com/mitoteam/dhtmlbs"
@@ -11,6 +8,7 @@ import (
 	"github.com/mitoteam/mbr"
 	"github.com/mitoteam/mt-ddns-updater/app"
 	"github.com/mitoteam/mt-ddns-updater/model"
+	"github.com/mitoteam/mttools"
 	"github.com/mitoteam/mtweb"
 )
 
@@ -71,7 +69,7 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 				row := table.NewRow()
 
 				row.Cell(wh.FQDN())
-				row.Cell(wh.ActualIp)
+				row.Cell(mtweb.Icon(iconIpAddress).Label(wh.ActualIp))
 				row.Cell(wh.Ttl)
 				row.Cell(wh.DnsServerAddress)
 				row.Cell(mtweb.Icon(iconKey).Label(wh.GetKey().Name))
@@ -119,8 +117,11 @@ func (c *WebhookRouteControllerType) Edit() mbr.Route {
 			}
 
 			fc := p.NewFormContext().
-				SetArg("Webhook", wh).
-				SetRedirect(mbr.Url(WebhookRouteController.List))
+				SetArg("Webhook", wh)
+
+			if !p.Ctx.HasDestination() {
+				fc.SetRedirect(mbr.Url(WebhookRouteController.List))
+			}
 
 			p.Main(formWebhookEdit.Render(fc))
 
@@ -136,7 +137,7 @@ func (c *WebhookRouteControllerType) Delete() mbr.Route {
 			goapp.DeleteObject(
 				goapp.LoadOMust[model.DdnsWebhook](ctx.Request().PathValue("webhook_id")),
 			)
-			ctx.RedirectRoute(http.StatusFound, WebhookRouteController.List)
+			ctx.RedirectRoute(WebhookRouteController.List)
 			return nil
 		},
 	}
@@ -152,15 +153,15 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 
 			baseToolbar(p, nil).
 				AddIconBtn(
-					mbr.Url(WebhookRouteController.Edit, "webhook_id", wh.ID),
+					mbr.Url(WebhookRouteController.Edit, "webhook_id", wh.ID, "destination", mbr.Url(WebhookRouteController.View, "webhook_id", wh.ID)),
 					mtweb.FaIconEdit, "Edit",
 				).
 				AddIconBtn(
 					mbr.Url(WebhookRouteController.Question, "webhook_id", wh.ID),
-					mtweb.FaIconSearch, "Request Current IP",
+					iconMessage, "Request Current IP",
 				).
 				AddIconBtn(
-					mbr.Url(WebhookRouteController.TestUpdate, "webhook_id", wh.ID),
+					mbr.Url(WebhookRouteController.ManualUpdate, "webhook_id", wh.ID),
 					mtweb.FaIconUpdate, "Test Update",
 				)
 
@@ -190,7 +191,7 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 			//info
 			lc = dhtmlbs.NewListCard().
 				Header(mtweb.Icon(mtweb.FaIconInfo).Label("Info")).
-				Add(dhtml.RenderValue("Actual IP", wh.ActualIp))
+				Add(dhtml.RenderValue(mtweb.Icon(iconIpAddress).Label("Actual IP"), wh.ActualIp))
 
 			grid.Add(lc)
 
@@ -205,48 +206,19 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 func (c *WebhookRouteControllerType) Question() mbr.Route {
 	return mbr.Route{
 		PathPattern: "/{webhook_id}/question",
-		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
-			wh := goapp.LoadOMust[model.DdnsWebhook](p.Ctx.Request().PathValue("webhook_id"))
-
-			p.Title(wh.FQDN())
-
-			baseToolbar(p, wh)
+		HandleF: func(ctx *mbr.MbrContext) any {
+			wh := goapp.LoadOMust[model.DdnsWebhook](ctx.Request().PathValue("webhook_id"))
 
 			helper := app.NewWebhookService(wh)
-			ip, err := helper.QuestionIpAddress()
+			log := helper.QuestionIpAddress()
 
-			piece := dhtml.NewHtmlPiece().
-				Append(dhtml.Div().Class("fw-bold fs-4").Append("Message")).
-				Append(dhtml.NewTag("pre").Append(helper.GetLastMessage()))
-
-			if err == nil {
-				s := fmt.Sprintf("A-Record %s address resolved to %s", wh.FQDN(), ip.String())
-
-				piece.
-					Append(dhtml.Div().Class("fw-bold fs-4").Append("Reply")).
-					Append(mtweb.RenderInfo(s)).
-					Append(dhtml.NewTag("pre").Append(helper.GetLastReply()))
-
-				//log.Println(s)
-
-				wh.ActualIp = ip.String()
-				goapp.SaveObject(wh)
-			} else {
-				s := fmt.Sprintf("Error during DNS query: %v", err)
-				piece.
-					Append(dhtml.Div().Class("fw-bold fs-4").Append("Error")).
-					Append(mtweb.RenderError(s))
-				//log.Println(s)
-			}
-
-			p.Main(piece)
-
+			ctx.RedirectRoute(WebhookRouteController.ViewWebhookLog, "webhook_id", wh.ID, "log_id", log.ID)
 			return nil
-		}),
+		},
 	}
 }
 
-func (c *WebhookRouteControllerType) TestUpdate() mbr.Route {
+func (c *WebhookRouteControllerType) ManualUpdate() mbr.Route {
 	return mbr.Route{
 		PathPattern: "/{webhook_id}/test-update",
 		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
@@ -260,6 +232,85 @@ func (c *WebhookRouteControllerType) TestUpdate() mbr.Route {
 				SetArg("Webhook", wh)
 
 			p.Main(formWebhookTestUpdate.Render(fc))
+
+			return nil
+		}),
+	}
+}
+
+func (c *WebhookRouteControllerType) ViewWebhookLog() mbr.Route {
+	return mbr.Route{
+		PathPattern: "/{webhook_id}/log/{log_id}",
+		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
+			log := goapp.LoadOMust[model.DdnsWebhookLog](p.Ctx.Request().PathValue("log_id"))
+			wh := log.GetWebhook()
+			mttools.AssertEqual(mttools.AnyToString(wh.ID), p.Ctx.Request().PathValue("webhook_id"))
+
+			p.Title(wh.FQDN())
+
+			baseToolbar(p, wh)
+
+			lc := dhtmlbs.NewListCard().
+				Header(mtweb.Icon(mtweb.FaIconInfo).Label("Log Entry Info")).
+				Add(dhtml.RenderValue(mtweb.Icon(iconWebhook).Label("Webhook"), wh.FQDN())).
+				Add(mtweb.NewTimestamp(log.CreatedAt)).
+				Add(dhtml.RenderValue("Kind", log.Kind.String()))
+
+			if log.Ip != "" {
+				lc.Add(dhtml.RenderValue(mtweb.Icon(iconIpAddress).Label("IP Address"), log.Ip))
+			}
+
+			if log.Error != "" {
+				lc.Add(mtweb.RenderError(log.Error))
+			}
+
+			p.Main(lc)
+
+			if log.Message != "" {
+				card := dhtmlbs.NewCard().Class("mt-3").
+					Header(mtweb.Icon(iconMessage).Label("Message")).
+					Body(dhtml.NewTag("pre").Class("mb-0").Append(log.Message))
+
+				p.Main(card)
+			}
+
+			if log.Reply != "" {
+				card := dhtmlbs.NewCard().Class("mt-3").
+					Header(mtweb.Icon(iconReply).Label("Reply")).
+					Body(dhtml.NewTag("pre").Class("mb-0").Append(log.Reply))
+
+				p.Main(card)
+			}
+
+			/*
+				ip, err := helper.QuestionIpAddress()
+
+				piece := dhtml.NewHtmlPiece().
+					Append(dhtml.Div().Class("fw-bold fs-4").Append("Message")).
+					Append(dhtml.NewTag("pre").Append(helper.GetLastMessage()))
+
+				if err == nil {
+					s := fmt.Sprintf("A-Record %s address resolved to %s", wh.FQDN(), ip.String())
+
+					piece.
+						Append(dhtml.Div().Class("fw-bold fs-4").Append("Reply")).
+						Append(mtweb.RenderInfo(s)).
+						Append(dhtml.NewTag("pre").Append(helper.GetLastReply()))
+
+					//log.Println(s)
+
+					wh.ActualIp = ip.String()
+					goapp.SaveObject(wh)
+				} else {
+					s := fmt.Sprintf("Error during DNS query: %v", err)
+					piece.
+						Append(dhtml.Div().Class("fw-bold fs-4").Append("Error")).
+						Append(mtweb.RenderError(s))
+					//log.Println(s)
+				}
+
+				p.Main(piece)
+			*/
 
 			return nil
 		}),
