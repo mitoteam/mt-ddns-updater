@@ -23,7 +23,7 @@ type DdnsWebhook struct {
 
 	//fk
 	KeyID int64    `gorm:"not null;index"`
-	Key   *DdnsKey `gorm:"constraint:OnUpdate:RESTRICT,OnDelete:RESTRICT"`
+	Key   *DdnsKey `gorm:"->;constraint:OnUpdate:RESTRICT,OnDelete:RESTRICT"`
 
 	Description string
 }

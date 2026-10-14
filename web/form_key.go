@@ -39,7 +39,7 @@ var formKeyEdit = &dhtmlform.FormHandler{
 		key.Name = fd.GetValue("name").(string)
 
 		if algo, ok := mttools.AnyToIntOk(fd.GetValue("algo")); ok {
-			key.Algo = algo
+			key.Algo = model.KeyAlgoType(algo)
 		}
 		key.Secret = fd.GetValue("secret").(string)
 		key.Description = fd.GetValue("description").(string)

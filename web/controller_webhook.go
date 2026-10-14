@@ -177,7 +177,7 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 			if key := wh.GetKey(); key != nil {
 				lc.Add(dhtml.RenderValue(
 					mtweb.Icon(iconKey).Label("Key"),
-					key.Name+" ("+key.GetAlgoName()+")",
+					key.Name+" ("+key.Algo.String()+")",
 				))
 			}
 

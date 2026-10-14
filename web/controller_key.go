@@ -52,7 +52,7 @@ func (c *KeyRouteControllerType) List() mbr.Route {
 				row := table.NewRow()
 
 				row.Cell(key.Name)
-				row.Cell(key.GetAlgoName())
+				row.Cell(key.Algo.String())
 				row.Cell("[hidden]").Class("text-muted")
 				row.Cell(key.WebhooksCount())
 				row.Cell(key.Description).Class("small-muted")
