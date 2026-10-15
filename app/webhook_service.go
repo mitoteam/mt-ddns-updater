@@ -14,21 +14,10 @@ import (
 
 type WebhookService struct {
 	webhook *model.DdnsWebhook
-
-	lastMessage string
-	lastReply   string
 }
 
 func NewWebhookService(webhook *model.DdnsWebhook) *WebhookService {
 	return &WebhookService{webhook: webhook}
-}
-
-func (ws *WebhookService) GetLastMessage() string {
-	return ws.lastMessage
-}
-
-func (ws *WebhookService) GetLastReply() string {
-	return ws.lastReply
 }
 
 func (ws *WebhookService) QuestionIpAddress() (log *model.DdnsWebhookLog) {
@@ -40,7 +29,7 @@ func (ws *WebhookService) QuestionIpAddress() (log *model.DdnsWebhookLog) {
 
 	// prepare network client and new log entry
 	client := new(dns.Client)
-	log = model.NewWebhookLog(ws.webhook, model.LogKindQuestionGui)
+	log = model.NewWebhookLog(ws.webhook, model.LogKindUpdateGui)
 
 	// save raw-message before sending it
 	log.Message = msg.String()
@@ -79,9 +68,14 @@ func (ws *WebhookService) QuestionIpAddress() (log *model.DdnsWebhookLog) {
 	return log
 }
 
-func (ws *WebhookService) UpdateIpAddress(ip net.IP) error {
+func (ws *WebhookService) UpdateIpAddress(ip net.IP) (log *model.DdnsWebhookLog) {
 	fullName := ws.webhook.FQDN()
 
+	// prepare network client and new log entry
+	client := new(dns.Client)
+	log = model.NewWebhookLog(ws.webhook, model.LogKindQuestionGui)
+
+	//prepare message
 	msg := new(dns.Msg)
 	msg.SetUpdate(dns.Fqdn(ws.webhook.DnsZoneName))
 
@@ -104,30 +98,32 @@ func (ws *WebhookService) UpdateIpAddress(ip net.IP) error {
 		msg.SetTsig(dns.Fqdn(key.Name), dns.Fqdn(key.Algo.String()), 300, time.Now().Unix())
 	}
 
-	// prepare network client
-	client := new(dns.Client)
 	if key != nil {
 		client.TsigSecret = map[string]string{dns.Fqdn(key.Name): key.Secret}
 	}
 	//client.Net = "tcp"
 
 	// save raw-message before sending it
-	ws.lastMessage = msg.String()
-	ws.lastReply = "" //and clear reply
+	log.Message = msg.String()
 
 	// send message to DNS server
 	response, _, err := client.Exchange(msg, ws.webhook.DnsServerAddress)
 	if err != nil {
-		return err
+		log.Error = err.Error()
+		goapp.SaveObject(log)
+		return log
 	}
 
 	//save RAW reply
-	ws.lastReply = response.String()
+	log.Reply = response.String()
 
 	// check server's reply code (Rcode)
-	if response.Rcode != dns.RcodeSuccess {
-		return fmt.Errorf("DNS Server rejected update. Rcode: %s", dns.RcodeToString[response.Rcode])
+	if response.Rcode == dns.RcodeSuccess {
+		log.Ip = ip.String()
+	} else {
+		log.Error = fmt.Sprintf("DNS Server rejected update. Rcode: %s", dns.RcodeToString[response.Rcode])
 	}
 
-	return nil //no error
+	goapp.SaveObject(log)
+	return log
 }
