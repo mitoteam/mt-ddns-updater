@@ -82,7 +82,12 @@ func (c *WebhookRouteControllerType) List() mbr.Route {
 						mtweb.NewSmBtnR(mtweb.FaIconView, WebhookRouteController.View, "webhook_id", wh.ID),
 					).
 					Append(
-						mtweb.NewEditBtn(mbr.Url(WebhookRouteController.Edit, "webhook_id", wh.ID)),
+						mtweb.NewEditBtn(
+							mbr.Url(
+								WebhookRouteController.Edit, "webhook_id", wh.ID,
+								"destination", p.Ctx.Request().RequestURI,
+							),
+						),
 					).
 					Append(
 						mtweb.NewDeleteBtn(mbr.Url(WebhookRouteController.Delete, "webhook_id", wh.ID), ""),
@@ -153,7 +158,9 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 
 			baseToolbar(p, nil).
 				AddIconBtn(
-					mbr.Url(WebhookRouteController.Edit, "webhook_id", wh.ID, "destination", mbr.Url(WebhookRouteController.View, "webhook_id", wh.ID)),
+					mbr.Url(
+						WebhookRouteController.Edit, "webhook_id", wh.ID, "destination", p.Ctx.Request().RequestURI,
+					),
 					mtweb.FaIconEdit, "Edit",
 				).
 				AddIconBtn(
@@ -198,6 +205,45 @@ func (c *WebhookRouteControllerType) View() mbr.Route {
 			// add grid to page
 			p.Main(grid)
 
+			// #region History
+			log_table := mtweb.NewTable().
+				EmptyLabel("no requests made yet").
+				Header("ID").
+				Header("Time").
+				Header("Kind").
+				Header("IP").
+				Header("Error").
+				Header("") // Actions
+
+			for _, log := range wh.LogList() {
+				row := log_table.NewRow()
+
+				row.Cell(log.ID)
+				row.Cell(mtweb.NewTimestamp(log.CreatedAt))
+				row.Cell(log.Kind.String())
+				row.Cell(log.Ip)
+				if log.Error != "" {
+					row.Cell(mtweb.RenderError(log.Error))
+				} else {
+					row.Cell("")
+				}
+
+				var actions dhtml.HtmlPiece
+
+				actions.
+					Append(
+						mtweb.NewSmBtnR(mtweb.FaIconView, WebhookRouteController.LogView, "webhook_id", wh.ID, "log_id", log.ID),
+					)
+				row.Cell(actions)
+			}
+
+			p.Main(
+				dhtmlbs.NewCard().Class("mt-3").
+					Header(mtweb.Icon(iconWebhookLog).Label("Request Log")).
+					Body(log_table),
+			)
+			// #endregion History
+
 			return nil
 		}),
 	}
@@ -210,9 +256,19 @@ func (c *WebhookRouteControllerType) Question() mbr.Route {
 			wh := goapp.LoadOMust[model.DdnsWebhook](ctx.Request().PathValue("webhook_id"))
 
 			helper := app.NewWebhookService(wh)
-			log := helper.QuestionIpAddress()
+			var log *model.DdnsWebhookLog
 
-			ctx.RedirectRoute(WebhookRouteController.ViewWebhookLog, "webhook_id", wh.ID, "log_id", log.ID)
+			goapp.Transaction(func() error {
+				log = helper.QuestionIpAddress()
+
+				if log.Error == "" {
+					wh.ActualIp = log.Ip
+					goapp.SaveObject(wh)
+				}
+				return nil
+			})
+
+			ctx.RedirectRoute(WebhookRouteController.LogView, "webhook_id", wh.ID, "log_id", log.ID)
 			return nil
 		},
 	}
@@ -238,7 +294,8 @@ func (c *WebhookRouteControllerType) ManualUpdate() mbr.Route {
 	}
 }
 
-func (c *WebhookRouteControllerType) ViewWebhookLog() mbr.Route {
+// #region Webhook log entries
+func (c *WebhookRouteControllerType) LogView() mbr.Route {
 	return mbr.Route{
 		PathPattern: "/{webhook_id}/log/{log_id}",
 		HandleF: CreatePageBuilderRouteHandler(func(p *PageBuilder) any {
@@ -282,37 +339,9 @@ func (c *WebhookRouteControllerType) ViewWebhookLog() mbr.Route {
 				p.Main(card)
 			}
 
-			/*
-				ip, err := helper.QuestionIpAddress()
-
-				piece := dhtml.NewHtmlPiece().
-					Append(dhtml.Div().Class("fw-bold fs-4").Append("Message")).
-					Append(dhtml.NewTag("pre").Append(helper.GetLastMessage()))
-
-				if err == nil {
-					s := fmt.Sprintf("A-Record %s address resolved to %s", wh.FQDN(), ip.String())
-
-					piece.
-						Append(dhtml.Div().Class("fw-bold fs-4").Append("Reply")).
-						Append(mtweb.RenderInfo(s)).
-						Append(dhtml.NewTag("pre").Append(helper.GetLastReply()))
-
-					//log.Println(s)
-
-					wh.ActualIp = ip.String()
-					goapp.SaveObject(wh)
-				} else {
-					s := fmt.Sprintf("Error during DNS query: %v", err)
-					piece.
-						Append(dhtml.Div().Class("fw-bold fs-4").Append("Error")).
-						Append(mtweb.RenderError(s))
-					//log.Println(s)
-				}
-
-				p.Main(piece)
-			*/
-
 			return nil
 		}),
 	}
 }
+
+// #endregion

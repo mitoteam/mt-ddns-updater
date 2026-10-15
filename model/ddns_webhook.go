@@ -52,6 +52,21 @@ func (wh *DdnsWebhook) BeforeSave(tx *gorm.DB) (err error) {
 	return nil //no error
 }
 
+func (wh *DdnsWebhook) BeforeDelete(tx *gorm.DB) (err error) {
+	for _, log := range wh.LogList() {
+		if err := goapp.DeleteObject(log); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (wh *DdnsWebhook) LogList() []*DdnsWebhookLog {
+	goapp.PreQuery[DdnsWebhookLog]().Where("webhook_id", wh.ID).Order("created_at DESC")
+	return goapp.LoadOL[DdnsWebhookLog]()
+}
+
 func (wh *DdnsWebhook) FQDN() string {
 	return dns.Fqdn(wh.DnsRecordName) + dns.Fqdn(wh.DnsZoneName)
 }
