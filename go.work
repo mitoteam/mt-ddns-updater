@@ -7,3 +7,4 @@ use ./pkg/dhtml
 use ./pkg/dhtmlbs
 use ./pkg/dhtmlform
 use ./pkg/mbr
+use ./pkg/mttools
