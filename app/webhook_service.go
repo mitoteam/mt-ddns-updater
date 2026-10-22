@@ -29,7 +29,7 @@ func (ws *WebhookService) QuestionIpAddress() (log *model.DdnsWebhookLog) {
 
 	// prepare network client and new log entry
 	client := new(dns.Client)
-	log = model.NewWebhookLog(ws.webhook, model.LogKindUpdateGui)
+	log = model.NewWebhookLog(ws.webhook, model.LogKindQuestionGui)
 
 	// save raw-message before sending it
 	log.Message = msg.String()
@@ -73,7 +73,7 @@ func (ws *WebhookService) UpdateIpAddress(ip net.IP) (log *model.DdnsWebhookLog)
 
 	// prepare network client and new log entry
 	client := new(dns.Client)
-	log = model.NewWebhookLog(ws.webhook, model.LogKindQuestionGui)
+	log = model.NewWebhookLog(ws.webhook, model.LogKindUpdateGui)
 
 	//prepare message
 	msg := new(dns.Msg)
