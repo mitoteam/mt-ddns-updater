@@ -2,6 +2,7 @@ package app
 
 import (
 	"github.com/mitoteam/goapp"
+	"github.com/mitoteam/mttools"
 )
 
 // Settings are stored in .settings.yml and not changeable at runtime
@@ -17,7 +18,7 @@ var defaultSettings *AppSettingsType
 func init() {
 	//default settings
 	defaultSettings = &AppSettingsType{
-		GuiPassword:       "mitoteam",
+		GuiPassword:       mttools.RandomString(20),
 		GuiSessionTimeout: 7,
 	}
 
