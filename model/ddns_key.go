@@ -31,36 +31,50 @@ const (
 	KeyAlgoMD5                         // 6
 )
 
-var keyAlgoMap = map[KeyAlgoType]string{
-	KeyAlgoSHA1:   dns.HmacSHA1,
-	KeyAlgoSHA224: dns.HmacSHA224,
-	KeyAlgoSHA256: dns.HmacSHA256,
-	KeyAlgoSHA384: dns.HmacSHA384,
-	KeyAlgoSHA512: dns.HmacSHA512,
-	KeyAlgoMD5:    dns.HmacMD5,
-}
-
-func (v KeyAlgoType) String() string {
-	if s, ok := keyAlgoMap[v]; ok {
-		return s
-	} else {
+func (v KeyAlgoType) Name() string {
+	switch v {
+	case KeyAlgoSHA1:
+		return dns.HmacSHA1
+	case KeyAlgoSHA224:
+		return dns.HmacSHA224
+	case KeyAlgoSHA256:
+		return dns.HmacSHA256
+	case KeyAlgoSHA384:
+		return dns.HmacSHA384
+	case KeyAlgoSHA512:
+		return dns.HmacSHA512
+	case KeyAlgoMD5:
+		return dns.HmacMD5
+	default:
 		return fmt.Sprintf("Unknown key algo(%d)", v)
 	}
 }
 
+var keyAlgoOptions mttools.Values
+
 // options for select form element
-func DdnsKeyAlgoOptions() (r map[string]any) {
-	r = make(map[string]any, len(keyAlgoMap))
-
-	for key, value := range keyAlgoMap {
-		r[mttools.AnyToString(key)] = value
-	}
-
-	return r
+func DdnsKeyAlgoOptions() *mttools.Values {
+	return &keyAlgoOptions
 }
 
 func init() {
 	goapp.DbSchema.AddModel(reflect.TypeFor[DdnsKey]())
+
+	//all algos list
+	keyAlgoList := []KeyAlgoType{
+		KeyAlgoSHA1,
+		KeyAlgoSHA224,
+		KeyAlgoSHA256,
+		KeyAlgoSHA384,
+		KeyAlgoSHA512,
+		KeyAlgoMD5,
+	}
+
+	keyAlgoOptions = mttools.NewValues()
+
+	for _, v := range keyAlgoList {
+		keyAlgoOptions.Set(v, v.Name())
+	}
 }
 
 func (k *DdnsKey) WebhooksCount() int64 {

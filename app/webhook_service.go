@@ -95,7 +95,7 @@ func (ws *WebhookService) UpdateIpAddress(ip net.IP) (log *model.DdnsWebhookLog)
 	// Add TSIG-key data
 	key := ws.webhook.GetKey()
 	if key != nil {
-		msg.SetTsig(dns.Fqdn(key.Name), dns.Fqdn(key.Algo.String()), 300, time.Now().Unix())
+		msg.SetTsig(dns.Fqdn(key.Name), dns.Fqdn(key.Algo.Name()), 300, time.Now().Unix())
 	}
 
 	if key != nil {

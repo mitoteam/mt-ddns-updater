@@ -18,9 +18,9 @@ var formKeyEdit = &dhtmlform.FormHandler{
 			dhtml.Div().Class("border bg-light p-3").Append(
 				dhtmlbs.NewTextInput("name").Label("Key Name").Default(key.Name).Require(),
 				dhtmlbs.NewSelect("algo").
-					OptionsMap(model.DdnsKeyAlgoOptions()).
-					Label("Algorithm").
+					Options(model.DdnsKeyAlgoOptions()).
 					Default(key.Algo).
+					Label("Algorithm").
 					Require(),
 				dhtmlbs.NewTextInput("secret").
 					Label("Secret").
